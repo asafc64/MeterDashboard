@@ -5,11 +5,13 @@ class MeteList
         this.ulElement = ulElement;
         this.items = new Set();
         this.selectedMeters = [];
+        this.onSelectChange = undefined;
         $("body").on("change", $(".meter-item input[type='checkbox']"), () =>
         {
             this.selectedMeters = $(".meter-item input[type='checkbox']:checked")
                 .map((i,e) => $(e).data("meter-name"))
                 .toArray();
+            this.onSelectChange();
         })
     }
 
@@ -33,6 +35,7 @@ $(document).ready(function ()
     const baseUrl = "http://localhost:5177/meter-dashboard";
     const loadingPlotsPanel = $(".loading-plots");
     const meterList = new MeteList($(".meters-list"));
+    meterList.onSelectChange = onSelectedMetersChange;
     let states = []
 
     let loadingAnimation = setInterval(function ()
@@ -41,9 +44,14 @@ $(document).ready(function ()
             loadingPlotsPanel.html("Loading")
         else
             loadingPlotsPanel.append(".")
-    }, 500)
+    }, 500);
 
     setInterval(refreshLoop, 1000);
+
+    function onSelectedMetersChange() {
+        $(".measurements-grid").empty();
+        states = [];
+    }
 
     function refreshLoop()
     {

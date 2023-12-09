@@ -1,7 +1,7 @@
 html{
     height: 100%;
     font-family: 'Roboto Slab';
-    background: #e4e7e9;
+    background: #514953;
 }
 
 body{
@@ -12,21 +12,33 @@ body{
 }
 
 .meters-area{
-    border-right: 2px solid #666;
     margin-top: 10px;
     padding: 10px;
     min-width: 200px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto 1fr;
 }
 .meters-title{
-    color: #000;
-    font-size: 20px;
-    margin-bottom: 10px;
+    color: #FFF;
+    font-size: 18px;
+    padding-left: 5px;
+}
+.meters-list{
+    grid-column-end: span 2;
+    margin-top: 10px;
 }
 .meter-item{
-    font-size: 20px;
+    color: #DDD;
+    font-size: 14px;
+    font-weight: 200;
     display: grid;
     grid-template-columns: 22px auto;
-    gap: 10px;
+    margin-bottom: 3px;
+    cursor: pointer;
+}
+.meter-item:hover{
+    color: #FFF;
 }
 
 .loading-plots{
@@ -38,6 +50,7 @@ body{
     text-align: center;
     line-height: 200px;
     font-size: 25px;
+    color: white;
 }
 
 .measurements-grid{
@@ -67,16 +80,32 @@ body{
     border-radius: 2px;
 }
 .meter-name{
-    font-size: 20px;
+    font-size: 18px;
+    font-weight: 500;
     color: #666;
 }
 .instrument-name{
-    font-size: 20px;
+    font-size: 18px;
+    font-weight: 500;
     margin-bottom: 10px;
 }
 
 
 
 input[type="checkbox"]{
-    margin-top: 6px;
+    margin-top: 4px;
+    cursor: pointer;
+}
+.link-button{
+    background: none;
+    border: none;
+    padding: 0;
+    color: rgb(56, 163, 216);
+    cursor: pointer;
+    font-family: 'Roboto Slab';
+}
+.link-button:hover{
+    /* text-decoration: underline; */
+    color: rgb(62, 175, 231);
+
 }
