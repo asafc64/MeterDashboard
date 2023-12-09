@@ -1,0 +1,82 @@
+html{
+    height: 100%;
+    font-family: 'Roboto Slab';
+    background: #e4e7e9;
+}
+
+body{
+    height: 100%;
+    margin: 0;
+    display: grid;
+    grid-template-columns: auto 1fr;
+}
+
+.meters-area{
+    border-right: 2px solid #666;
+    margin-top: 10px;
+    padding: 10px;
+    min-width: 200px;
+}
+.meters-title{
+    color: #000;
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+.meter-item{
+    font-size: 20px;
+    display: grid;
+    grid-template-columns: 22px auto;
+    gap: 10px;
+}
+
+.loading-plots{
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    text-align: center;
+    line-height: 200px;
+    font-size: 25px;
+}
+
+.measurements-grid{
+    display: grid;
+    padding: 5px;
+}
+@media (min-width: 500px) {
+    .measurements-grid{
+        grid-template-columns: 1fr;
+    }
+}
+@media (min-width: 1000px) {
+    .measurements-grid{
+        grid-template-columns: 1fr 1fr;
+    }
+}
+@media (min-width: 1500px) {
+    .measurements-grid{
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+}
+
+.measurement-item{
+    background: #FFF;
+    padding: 10px;
+    margin: 5px;
+    border-radius: 2px;
+}
+.meter-name{
+    font-size: 20px;
+    color: #666;
+}
+.instrument-name{
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+
+
+input[type="checkbox"]{
+    margin-top: 6px;
+}

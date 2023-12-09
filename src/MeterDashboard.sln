@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeterDashboard", "MeterDashboard\MeterDashboard.csproj", "{CFD5A022-8AD0-4556-934F-AE06FD7B08C4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeterDashboardWebApp", "MeterDashboardWebApp\MeterDashboardWebApp.csproj", "{651F16EB-4B06-43A7-B44E-EFA7E342E1C9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CFD5A022-8AD0-4556-934F-AE06FD7B08C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFD5A022-8AD0-4556-934F-AE06FD7B08C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFD5A022-8AD0-4556-934F-AE06FD7B08C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFD5A022-8AD0-4556-934F-AE06FD7B08C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{651F16EB-4B06-43A7-B44E-EFA7E342E1C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{651F16EB-4B06-43A7-B44E-EFA7E342E1C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{651F16EB-4B06-43A7-B44E-EFA7E342E1C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{651F16EB-4B06-43A7-B44E-EFA7E342E1C9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
