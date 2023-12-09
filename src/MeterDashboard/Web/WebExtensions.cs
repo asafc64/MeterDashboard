@@ -27,8 +27,6 @@ public static class WebExtensions
     private static async Task GetStaticFile(string file, HttpContext context)
     {
         var resource = _staticFilePrefix + "." + file.Replace("/", ".");
-        Console.WriteLine(file);
-        Console.WriteLine(resource);
 
         if (file.EndsWith("index.js"))
         {
