@@ -12,7 +12,12 @@ class MeteList
                 .map((i,e) => $(e).data("meter-name"))
                 .toArray();
             this.onSelectChange();
-        })
+        });
+        $("body").on("click", "#clear-meter-filter", () => {
+            $(".meter-item input[type='checkbox']").prop( "checked", false );
+            this.selectedMeters = [];
+            this.onSelectChange();
+        });
     }
 
     add(meter)

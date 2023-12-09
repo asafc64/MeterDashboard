@@ -1,7 +1,7 @@
 html{
     height: 100%;
     font-family: 'Roboto Slab';
-    background: #514953;
+    background: #625f63;
 }
 
 body{
@@ -9,10 +9,21 @@ body{
     margin: 0;
     display: grid;
     grid-template-columns: auto 1fr;
+    grid-template-rows: auto 1fr;
+}
+
+.header-area{
+    grid-column-end: span 2;
+    background: #000000ad;
+    height: 90px;
+    padding: 4px 2px 2px 14px;
+}
+.header-title{
+    color: #FFF;
+    font-size: 30px;
 }
 
 .meters-area{
-    margin-top: 10px;
     padding: 10px;
     min-width: 200px;
     display: grid;
@@ -53,6 +64,11 @@ body{
     color: white;
 }
 
+.measurements-area{
+    position: relative;
+    top: -40px;
+    padding-right: 90px;
+}
 .measurements-grid{
     display: grid;
     padding: 5px;
