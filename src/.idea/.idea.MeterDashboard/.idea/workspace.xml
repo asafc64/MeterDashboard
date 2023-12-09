@@ -10,12 +10,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ae9cc0a3-49c6-465d-a9b4-ac9541ef8f83" name="Changes" comment="search">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.MeterDashboard/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.MeterDashboard/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MeterDashboard/Web/StaticFiles/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/MeterDashboard/Web/StaticFiles/index.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MeterDashboard/Web/StaticFiles/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/MeterDashboard/Web/StaticFiles/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MeterDashboard/Web/StaticFiles/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/MeterDashboard/Web/StaticFiles/index.js" afterDir="false" />
-    </list>
+    <list default="true" id="ae9cc0a3-49c6-465d-a9b4-ac9541ef8f83" name="Changes" comment="Filter" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -100,6 +95,14 @@
     </configuration>
   </component>
   <component name="TaskManager">
+    <task id="LOCAL‎-00001" summary="Filter">
+      <created>1702144627164</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL‎-00001" />
+      <option name="project" value="LOCAL‎" />
+      <updated>1702144627164</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="UnityCheckinConfiguration" checkUnsavedScenes="false" />
@@ -117,6 +120,7 @@
   <component name="VcsManagerConfiguration">
     <option name="LOCAL_CHANGES_DETAILS_PREVIEW_SHOWN" value="false" />
     <MESSAGE value="search" />
-    <option name="LAST_COMMIT_MESSAGE" value="search" />
+    <MESSAGE value="Filter" />
+    <option name="LAST_COMMIT_MESSAGE" value="Filter" />
   </component>
 </project>
