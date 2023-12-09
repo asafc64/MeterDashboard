@@ -18,4 +18,10 @@
       <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
 
+    <ItemGroup>
+      <EmbeddedResource Include="Web\StaticFiles\index.css" />
+      <EmbeddedResource Include="Web\StaticFiles\index.html" />
+      <EmbeddedResource Include="Web\StaticFiles\index.js" />
+    </ItemGroup>
+
 </Project>

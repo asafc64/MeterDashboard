@@ -1,3 +1,7 @@
+if (!window.apiPort) {
+    window.apiPort = 5177;
+}
+
 class MeteList
 {
     constructor(ulElement)
@@ -37,7 +41,7 @@ class MeteList
 
 $(document).ready(function ()
 {
-    const baseUrl = "http://localhost:5177/meter-dashboard";
+    const baseUrl = `http://localhost:${window.apiPort}/meter-dashboard/api`;
     const loadingPlotsPanel = $(".loading-plots");
     const meterList = new MeteList($(".meters-list"));
     meterList.onSelectChange = onSelectedMetersChange;

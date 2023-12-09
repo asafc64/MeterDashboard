@@ -1,4 +1,6 @@
 ﻿using System.Collections.Immutable;
+using System.Reflection;
+using System.Text;
 using MeterDashboard.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -12,22 +14,31 @@ namespace MeterDashboard.Web;
 
 public static class WebExtensions
 {
+    private static readonly string _staticFilePrefix = "MeterDashboard.Web.StaticFiles";
+    private static readonly Assembly _assembly = typeof(WebExtensions).Assembly;
+    
     public static void MapMeterDashboard(this IEndpointRouteBuilder builder, string baseRoute = "/meter-dashboard")
     {
-        builder.MapPost(baseRoute + "/measurements", GetMeasurements);
+        builder.MapPost(baseRoute + "/api/measurements", GetMeasurements);
+        builder.MapGet(baseRoute + "/{**file}", GetStaticFile);
+        builder.MapGet(baseRoute + "/", (HttpContext context) => GetStaticFile("index.html", context));
     }
+    
+    private static async Task GetStaticFile(string file, HttpContext context)
+    {
+        var resource = _staticFilePrefix + "." + file.Replace("/", ".");
+        Console.WriteLine(file);
+        Console.WriteLine(resource);
 
-    // private static IEnumerable<MeasurementMetadataResponse> ListMeasurements(Storage storage, [FromBody] MeasurementRequest[] request)
-    // {
-    //     return storage.Measurements
-    //         .Select(measurement => new MeasurementMetadataResponse
-    //         {
-    //             MeterName = measurement.Instrument.Meter.Name,
-    //             InstrumentName = measurement.Instrument.Name,
-    //             InstrumentUnit = measurement.Instrument.Unit,
-    //         });
-    // }
+        if (file.EndsWith("index.js"))
+        {
+            var command = $"window.apiPort = {context.Connection.LocalPort}\n";
+            await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes(command));
+        }
 
+        await using var stream = _assembly.GetManifestResourceStream(resource);
+        await stream.CopyToAsync(context.Response.Body);
+    }
     
     private static IEnumerable<MeasurementResponse> GetMeasurements(Storage storage, [FromBody] MeasurementRequest? request)
     {
