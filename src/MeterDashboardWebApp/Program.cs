@@ -11,6 +11,7 @@ builder.Services.AddCors();
 
 var app = builder.Build();
 
+// just for developing the ui side on vscode
 app.UseCors(o => o.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
 app.MapMeterDashboard();
