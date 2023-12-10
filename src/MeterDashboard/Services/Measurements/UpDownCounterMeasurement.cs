@@ -1,8 +1,7 @@
 ﻿using System.Diagnostics.Metrics;
 using System.Numerics;
-using MeterDashboard.Services.Measurements;
 
-namespace MeterDashboard.Services;
+namespace MeterDashboard.Services.Measurements;
 
 public class UpDownCounterMeasurement<T> : IMeasurement, IMeasurementFactory where T: IAdditionOperators<T,T,T>
 {
