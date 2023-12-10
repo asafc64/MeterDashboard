@@ -21,11 +21,24 @@ public static class WebExtensions
     {
         builder.MapPost(baseRoute + "/api/measurements", GetMeasurements);
         builder.MapGet(baseRoute + "/{**file}", GetStaticFile);
-        builder.MapGet(baseRoute + "/", (HttpContext context) => GetStaticFile("index.html", context));
+        // builder.MapGet(baseRoute + "/", (HttpContext context) => GetStaticFile("index.html", context));
     }
     
-    private static async Task GetStaticFile(string file, HttpContext context)
+    private static async Task GetStaticFile(string? file, HttpContext context)
     {
+        if (file == null)
+        {
+            if (context.Request.Path.Value.EndsWith("/") == false)
+            {
+                context.Response.Redirect("/meter-dashboard/");
+                return;
+            }
+            else
+            {
+                file = "index.html";
+            }
+        }
+
         var resource = _staticFilePrefix + "." + file.Replace("/", ".");
 
         if (file.EndsWith("index.js"))
