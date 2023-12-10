@@ -1,4 +1,4 @@
-﻿namespace MeterDashboard.Web;
+﻿namespace MeterDashboard.Web.Contracts;
 
 public class MeasurementRequest
 {
