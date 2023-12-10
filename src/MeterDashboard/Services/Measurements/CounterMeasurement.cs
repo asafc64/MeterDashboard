@@ -43,6 +43,9 @@ public class CounterMeasurement<T> : IMeasurement, IMeasurementFactory where T: 
 
     public void Add(T value)
     {
-        _timeLine.GetOrAdd(DateTime.UtcNow).Value += value;
+        lock (_timeLine)
+        {
+            _timeLine.GetOrAdd(DateTime.UtcNow).Value += value;
+        }
     }
 }

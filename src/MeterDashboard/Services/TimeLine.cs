@@ -2,7 +2,7 @@ using MeterDashboard.Services.Measurements;
 
 namespace MeterDashboard.Services;
 
-public struct TimeLine<T>
+public class TimeLine<T>
 {
     private TimeSpan _interval;
     private DataPoint<T>[] _queue;
@@ -16,7 +16,7 @@ public struct TimeLine<T>
         _aggValue = aggValue;
         _queue = new DataPoint<T>[capacity];
     }
-    
+
     public ref DataPoint<T> GetOrAdd(DateTime timestamp)
     {
         var roundedTimestamp = RoundTimestamp(timestamp); 
@@ -45,7 +45,7 @@ public struct TimeLine<T>
         return ref _queue[_head];
     }
 
-    public readonly DataPoint<T>[] SnapShot()
+    public DataPoint<T>[] SnapShot()
     {
         if (_isFull)
         {

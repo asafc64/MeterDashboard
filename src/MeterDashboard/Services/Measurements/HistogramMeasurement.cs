@@ -119,7 +119,10 @@ public class HistogramMeasurement<T, C> : IMeasurement, IMeasurementFactory
     public void Add(T tvalue)
     {
         var value = _converter.ToDouble(tvalue);
-        _timeLine.GetOrAdd(DateTime.UtcNow).Value.Add(value);
+        lock (_timeLine)
+        {
+            _timeLine.GetOrAdd(DateTime.UtcNow).Value.Add(value);
+        }
     }
 
     private struct DoubleStat

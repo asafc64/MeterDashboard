@@ -43,6 +43,9 @@ public class UpDownCounterMeasurement<T> : IMeasurement, IMeasurementFactory whe
 
     public void Add(T value)
     {
-        _timeLine.GetOrAdd(DateTime.UtcNow).Value += value;
+        lock (_timeLine)
+        {
+            _timeLine.GetOrAdd(DateTime.UtcNow).Value += value;
+        }
     }
 }

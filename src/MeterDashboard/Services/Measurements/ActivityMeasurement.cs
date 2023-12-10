@@ -21,7 +21,10 @@ public class ActivityMeasurement : IMeasurement
 
     public void Add(Activity activity)
     {
-        _timeLine.GetOrAdd(DateTime.UtcNow).Value.Add(activity.Duration);
+        lock (_timeLine)
+        {
+            _timeLine.GetOrAdd(DateTime.UtcNow).Value.Add(activity.Duration);
+        }
     }
 
     public Instrument Instrument { get; }
