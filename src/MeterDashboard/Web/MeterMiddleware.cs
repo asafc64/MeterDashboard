@@ -41,8 +41,15 @@ public class MeterMiddleware : IMiddleware
     {
         if (context.Request.Method != "GET")
             return false;
+
+        var fileRelativePath = GetRelativePath(context).TrimStart('/');
+        if (fileRelativePath == string.Empty)
+        {
+            context.Response.Redirect(PathBase + "/index.html");
+            return true;
+        }
         
-        var file = StaticFileNamespace + "." + GetRelativePath(context).TrimStart('/').Replace("/", ".");
+        var file = StaticFileNamespace + "." + fileRelativePath.Replace("/", ".");
         if (!_staticFiles.Contains(file))
             return false;
         
