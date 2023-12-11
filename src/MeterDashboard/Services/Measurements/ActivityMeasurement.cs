@@ -7,6 +7,7 @@ public struct ActivityDataPointValue
 {
     public int Occurrances { get; init; }
     public double MeanDuration { get; init; }
+    public double StddevDuration { get; init; }
 } 
 
 public class ActivityMeasurement : IMeasurement
@@ -41,9 +42,8 @@ public class ActivityMeasurement : IMeasurement
                 Value = new ActivityDataPointValue
                 {
                     Occurrances = i.Value.N,
-                    MeanDuration = i.Value.N > 0 
-                        ? (i.Value.Sum / i.Value.N).TotalSeconds
-                        : 0,
+                    MeanDuration = i.Value.GetMean(),
+                    StddevDuration = i.Value.GetStddev(),
                 }
             })
             .ToArray();
@@ -56,14 +56,22 @@ public class ActivityMeasurement : IMeasurement
 
     private struct Stats
     {
-        public TimeSpan Sum;
+        public double Sum;
+        public double SqrSum;
         public int N;
 
         public void Add(TimeSpan duration)
         {
-            Sum += duration;
+            Sum += duration.Ticks;
+            SqrSum += duration.Ticks*duration.Ticks;
             N++;
         }
+        
+        public readonly double GetStddev() => N > 0 ? Math.Sqrt(SqrSum / N - Math.Pow(GetMean(), 2)) : 0;
+
+        public readonly double GetMean() => N > 0 ? Sum / N : 0;
+
+        public override string ToString() => $"{GetMean():F3}+-{GetStddev():F3}";
     }
     
     private class ActivityInstrument : Instrument

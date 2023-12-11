@@ -4,10 +4,10 @@ namespace MeterDashboard.Services.Measurements;
 
 public struct Stat<T> where T: struct
 {
-    public T Min;
-    public T Max;
-    public T Mean;
-    public T Stddev;
+    public T Min { get; init; }
+    public T Max { get; init; }
+    public T Mean { get; init; }
+    public T Stddev { get; init; }
 }
 
 public interface IDoubleConverter<T>
@@ -144,9 +144,9 @@ public class HistogramMeasurement<T, C> : IMeasurement, IMeasurementFactory
                 Max = value;
         }
         
-        public readonly double GetStddev() => Math.Sqrt(SqrSum / N - Math.Pow(GetMean(), 2));
+        public readonly double GetStddev() => N > 0 ? Math.Sqrt(SqrSum / N - Math.Pow(GetMean(), 2)) : 0;
 
-        public readonly double GetMean() => Sum / N;
+        public readonly double GetMean() => N > 0 ? Sum / N : 0;
 
         public override string ToString() => $"{GetMean():F3}+-{GetStddev():F3} [{Min:F3},{Max:F3}]";
     }

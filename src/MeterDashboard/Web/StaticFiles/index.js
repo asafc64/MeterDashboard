@@ -2,6 +2,19 @@ if (!window.apiPort) {
     window.apiPort = 5177;
 }
 
+const colors = [
+    '#1f77b4',  // muted blue
+    '#ff7f0e',  // safety orange
+    '#2ca02c',  // cooked asparagus green
+    '#d62728',  // brick red
+    '#9467bd',  // muted purple
+    '#8c564b',  // chestnut brown
+    '#e377c2',  // raspberry yogurt pink
+    '#7f7f7f',  // middle gray
+    '#bcbd22',  // curry yellow-green
+    '#17becf'   // blue-teal
+];
+
 class MeteList
 {
     constructor(ulElement)
@@ -109,9 +122,67 @@ $(document).ready(function ()
         }
         if(measurement.instrumentType == "ActivityInstrument")
             createOrUpdatePlotForActivity(measurement, state);
+        else if (measurement.instrumentType == "Histogram")
+            createOrUpdatePlotForHistogram(measurement, state);
         else
             createOrUpdatePlotForMetric(measurement, state);
 
+    }
+
+    function createOrUpdatePlotForHistogram(measurement, state){
+        xs = measurement.metrics[0].xs.map(x => new Date(x + 'Z'));
+        let data = []
+        $.each(measurement.metrics, (i, metric) =>
+        {
+            data.push({
+                x: xs,
+                y: measurement.metrics[i].ys.map(y => y.mean-3*y.stddev),
+                type: 'scatter',
+                fill: 'tozeroy',
+                fillcolor: '#00000000',
+                mode: 'none',
+                showlegend: false
+            });
+            data.push({
+                x: xs,
+                y: measurement.metrics[i].ys.map(y => y.mean+3*y.stddev),
+                fill: 'tonexty',
+                fillcolor: colors[i]+"30",
+                type: 'scatter',
+                mode: 'none',
+                showlegend: false
+            });
+            data.push({
+                x: xs,
+                y: measurement.metrics[i].ys.map(y => y.mean),
+                type: 'scatter',
+                line: {
+                  color: colors[i],
+                },
+                name: Object.keys(metric.tags).map(k => k + ": " + metric.tags[k]).join("-")
+            });
+        });
+        let layout = {
+            xaxis: getXaxis(),
+            yaxis: { fixedrange: true },
+            xaxis: { fixedrange: true },
+            margin: { l: 30, r: 0, b: 20, t: 0 },
+            height: 200,
+            legend: {
+                orientation: "h"
+            }
+            // plot_bgcolor:"transparent",
+            // paper_bgcolor:"transparent"
+        };
+        if(measurement.metrics.length == 1){
+            layout.showlegend = false;
+        }
+        const config = {
+            displayModeBar: false,
+            responsive: true,
+            staticPlot: true
+        };
+        Plotly.react(state.elementName, data, layout, config);
     }
 
     function createOrUpdatePlotForActivity(measurement, state){

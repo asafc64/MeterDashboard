@@ -30,6 +30,7 @@ class Generator : BackgroundService
     
     private static readonly Meter _meter2 = new("api");
     private static readonly Counter<int> _calls = _meter2.CreateCounter<int>("calls");
+    private static readonly Histogram<double> _duration = _meter2.CreateHistogram<double>("duration");
 
     private static readonly ActivitySource _activitySource = new("Generator");
     
@@ -40,7 +41,9 @@ class Generator : BackgroundService
         while (!stoppingToken.IsCancellationRequested)
         {
             using var activity = _activitySource.StartActivity();
-            await Task.Delay(1000, stoppingToken);
+            await Task.Delay(100, stoppingToken);
+            _duration.Record(_random.NextDouble(), new KeyValuePair<string, object?>("User", "A"));
+            _duration.Record(Math.Pow(_random.NextDouble(), 2)*2, new KeyValuePair<string, object?>("User", "B"));
             _expenses.Add(_random.NextDouble()*10-5);
             _stocks.Add(_random.NextDouble()*100-50, new KeyValuePair<string, object?>("User", "A"));
             _stocks.Add(_random.NextDouble()*100-50, new KeyValuePair<string, object?>("User", "B"));
