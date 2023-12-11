@@ -36,6 +36,7 @@ public class ActivityMeasurement : IMeasurement
     {
         var items = _timeLine.SnapShot();
         return items
+            .Where(x => since == null || x.Timestamp > since)
             .Select(i => new DataPoint
             {
                 Timestamp = i.Timestamp,
@@ -62,8 +63,8 @@ public class ActivityMeasurement : IMeasurement
 
         public void Add(TimeSpan duration)
         {
-            Sum += duration.Ticks;
-            SqrSum += duration.Ticks*duration.Ticks;
+            Sum += duration.TotalSeconds;
+            SqrSum += duration.TotalSeconds*duration.TotalSeconds;
             N++;
         }
         

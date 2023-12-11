@@ -165,7 +165,6 @@ $(document).ready(function ()
         let layout = {
             xaxis: getXaxis(),
             yaxis: { fixedrange: true },
-            xaxis: { fixedrange: true },
             margin: { l: 30, r: 0, b: 20, t: 0 },
             height: 200,
             legend: {
@@ -186,34 +185,66 @@ $(document).ready(function ()
     }
 
     function createOrUpdatePlotForActivity(measurement, state){
+        const xs = measurement.metrics[0].xs.map(x => new Date(x + 'Z'));
         const data = [
             {
-                x: measurement.metrics[0].xs.map(x => new Date(x + 'Z')),
+                x: xs,
                 y: measurement.metrics[0].ys.map(y => y.occurrances),
                 type: 'scatter',
-                name: "Occurrances",
+                name: "Occurrances"
             },
             {
-                x: measurement.metrics[0].xs.map(x => new Date(x + 'Z')),
+                x: xs,
+                y: measurement.metrics[0].ys.map(y => Math.max(0, y.meanDuration-3*y.stddevDuration)),
+                type: 'scatter',
+                fill: 'tozeroy',
+                fillcolor: '#00000000',
+                mode: 'none',
+                showlegend: false,
+                yaxis: 'y2',
+            },
+            {
+                x: xs,
+                y: measurement.metrics[0].ys.map(y => y.meanDuration+3*y.stddevDuration),
+                fill: 'tonexty',
+                fillcolor: colors[1]+"30",
+                type: 'scatter',
+                mode: 'none',
+                showlegend: false,
+                yaxis: 'y2',
+            },
+            {
+                x: xs,
                 y: measurement.metrics[0].ys.map(y => y.meanDuration),
                 type: 'scatter',
-                name: "Avg Duration",
+                line: {
+                  color: colors[1],
+                },
+                name: "Duration (Mean\u00B13\u03C3)",
                 yaxis: 'y2',
             }
         ]
         const layout = {
             xaxis: getXaxis(),
-            yaxis: { fixedrange: true },
-            xaxis: { fixedrange: true },
+            yaxis: { 
+                fixedrange: true ,
+                tickfont : {
+                    color : colors[0]
+                }
+            },
+            yaxis2: {
+                overlaying: 'y',
+                side: 'right',
+                tickfont : {
+                    color : colors[1]
+                }
+            },
             margin: { l: 30, r: 90, b: 20, t: 0 },
             height: 200,
             legend: {
                 orientation: "h"
             },
-            yaxis2: {
-                overlaying: 'y',
-                side: 'right',
-            },
+           
             // plot_bgcolor:"transparent",
             // paper_bgcolor:"transparent"
         };
@@ -246,7 +277,6 @@ $(document).ready(function ()
         let layout = {
             xaxis: getXaxis(),
             yaxis: { fixedrange: true },
-            xaxis: { fixedrange: true },
             margin: { l: 30, r: 0, b: 20, t: 0 },
             height: 200,
             legend: {
@@ -272,7 +302,8 @@ $(document).ready(function ()
         oneMinuteAgo.setMinutes(now.getMinutes() - 1);
         return {
             type: 'date',
-            range: [oneMinuteAgo, now]
+            range: [oneMinuteAgo, now],
+            fixedrange: true
         }
     }
 });

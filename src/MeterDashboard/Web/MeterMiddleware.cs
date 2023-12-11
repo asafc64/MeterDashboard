@@ -103,7 +103,8 @@ public class MeterMiddleware : IMiddleware
                 Metrics = measurements
                     .Select(m =>
                     {
-                        var dataPoints = m.GetDataPoints(null);
+                        var dataPoints = m.GetDataPoints(null)
+                            .Where(x => x.Timestamp <= DateTime.UtcNow.AddSeconds(-1));
                         return new MeasurementResponse.Metric
                         {
                             Tags = m.Tags.ToDictionary(x => x.Key, x => x.Value),
