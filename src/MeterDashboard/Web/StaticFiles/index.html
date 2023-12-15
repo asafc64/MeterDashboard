@@ -16,10 +16,21 @@
     <div class="header-area">
         <span class="header-title">Meter Dashboard</span>
     </div>
-    <div class="meters-area">
-        <div class="meters-title">Filter</div>
+    <div class="side-area">
+        <div class="side-area-title side-area-title-wide">Unit</div>
+        <div class="side-area-list">
+            <label class="side-area-list-item">
+                <input type="radio" name="unit" value="Second" checked="checked">
+                Second
+            </label>
+            <label class="side-area-list-item">
+                <input type="radio" name="unit" value="Minute">
+                Minute
+            </label>
+        </div>
+        <div class="side-area-title">Filter</div>
         <button class="link-button" id="clear-meter-filter">Clear</button>
-        <div class="meters-list"></div>
+        <div class="side-area-list" id="meters-list"></div>
     </div>
     <div class="measurements-area">
         <div class="loading-plots">Loading...</div>

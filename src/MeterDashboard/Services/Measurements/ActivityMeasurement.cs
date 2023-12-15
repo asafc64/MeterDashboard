@@ -3,7 +3,7 @@ using System.Diagnostics.Metrics;
 
 namespace MeterDashboard.Services.Measurements;
 
-public struct ActivityDataPointValue
+public record struct ActivityDataPointValue
 {
     public int Occurrances { get; init; }
     public double MeanDuration { get; init; }
@@ -14,18 +14,21 @@ public class ActivityMeasurement : IMeasurement
 {
     private TimeLine<Stats> _timeLine;
 
-    public ActivityMeasurement(TimeSpan interval, int capacity, string sourceName, string activityName)
+    public ActivityMeasurement(string sourceName, string activityName)
     {
-        _timeLine = new TimeLine<Stats>(interval, capacity, false);
+        _timeLine = new TimeLine<Stats>(false);
         Instrument = new ActivityInstrument(sourceName, activityName);
     }
 
     public void Add(Activity activity)
     {
-        lock (_timeLine)
-        {
-            _timeLine.GetOrAdd(DateTime.UtcNow).Value.Add(activity.Duration);
-        }
+        var stats = new Stats();
+        stats.Add(activity.Duration);
+        
+        _timeLine.AddOrUpdate(
+            DateTime.UtcNow, 
+            stats, 
+            (ref Stats exitingValue, in Stats newValue) => exitingValue.Add(newValue));
     }
 
     public Instrument Instrument { get; }
@@ -40,6 +43,7 @@ public class ActivityMeasurement : IMeasurement
             .Select(i => new DataPoint
             {
                 Timestamp = i.Timestamp,
+                Window = i.Window,
                 Value = new ActivityDataPointValue
                 {
                     Occurrances = i.Value.N,
@@ -66,6 +70,13 @@ public class ActivityMeasurement : IMeasurement
             Sum += duration.TotalSeconds;
             SqrSum += duration.TotalSeconds*duration.TotalSeconds;
             N++;
+        }
+        
+        public void Add(Stats other)
+        {
+            Sum += other.Sum;
+            SqrSum += other.SqrSum;
+            N += other.N;
         }
         
         public readonly double GetStddev() => N > 0 ? Math.Sqrt(SqrSum / N - Math.Pow(GetMean(), 2)) : 0;

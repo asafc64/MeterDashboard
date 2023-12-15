@@ -7,10 +7,6 @@ namespace MeterDashboard.Services;
 
 public class Storage
 {
-    // 5 * 30 = 1min minimum
-    private readonly TimeSpan DefaultInterval = TimeSpan.FromSeconds(1);
-    private readonly int DefaultCapacity = 60;
-    
     private readonly Dictionary<long, IMeasurement> _measurements = new();
 
     public IReadOnlyCollection<IMeasurement> Measurements => _measurements.Values;
@@ -126,7 +122,7 @@ public class Storage
             {
                 if (!_measurements.TryGetValue(key, out measurement))
                 {
-                    measurement = new ActivityMeasurement(DefaultInterval, DefaultCapacity, sourceName, activityName);
+                    measurement = new ActivityMeasurement(sourceName, activityName);
                     _measurements[key] = measurement;
                 }
             }
@@ -153,7 +149,7 @@ public class Storage
             {
                 if (!_measurements.TryGetValue(key, out measurement))
                 {
-                    measurement = TMeasurement.Create(DefaultInterval, DefaultCapacity, tags, instrument);
+                    measurement = TMeasurement.Create(tags, instrument);
                     _measurements[key] = measurement;
                 }
             }

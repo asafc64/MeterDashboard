@@ -3,21 +3,20 @@ using System.Numerics;
 
 namespace MeterDashboard.Services.Measurements;
 
-public class UpDownCounterMeasurement<T> : IMeasurement, IMeasurementFactory where T: IAdditionOperators<T,T,T>
+public class UpDownCounterMeasurement<T> : IMeasurement, IMeasurementFactory where T: struct, IAdditionOperators<T,T,T>
 {
     private TimeLine<T> _timeLine;
 
-    public UpDownCounterMeasurement(TimeSpan interval, int capacity, ReadOnlySpan<KeyValuePair<string, object?>> tags, Instrument instrument)
+    public UpDownCounterMeasurement(ReadOnlySpan<KeyValuePair<string, object?>> tags, Instrument instrument)
     {
         Instrument = instrument;
         Tags = tags.ToArray();
-        _timeLine = new TimeLine<T>(interval, capacity, true);
+        _timeLine = new TimeLine<T>(true);
     }
     
-    public static IMeasurement Create(TimeSpan interval, int capacity,
-        ReadOnlySpan<KeyValuePair<string, object?>> tags, Instrument instrument)
+    public static IMeasurement Create(ReadOnlySpan<KeyValuePair<string, object?>> tags, Instrument instrument)
     {
-        return new UpDownCounterMeasurement<T>(interval, capacity, tags, instrument);
+        return new UpDownCounterMeasurement<T>(tags, instrument);
     }
 
     public Instrument Instrument { get; }
@@ -31,6 +30,7 @@ public class UpDownCounterMeasurement<T> : IMeasurement, IMeasurementFactory whe
             .Select(x => new DataPoint
             {
                 Timestamp = x.Timestamp,
+                Window = x.Window,
                 Value = x.Value
             }).ToArray();
     }
@@ -42,9 +42,9 @@ public class UpDownCounterMeasurement<T> : IMeasurement, IMeasurementFactory whe
 
     public void Add(T value)
     {
-        lock (_timeLine)
-        {
-            _timeLine.GetOrAdd(DateTime.UtcNow).Value += value;
-        }
+        _timeLine.AddOrUpdate(
+            DateTime.UtcNow, 
+            value,
+            (ref T exitingValue, in T newValue) => exitingValue += newValue);
     }
 }

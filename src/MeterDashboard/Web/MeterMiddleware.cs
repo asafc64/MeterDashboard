@@ -72,8 +72,16 @@ public class MeterMiddleware : IMiddleware
         if (httpMethod == "POST" && relativePath == "/api/measurements")
         {
             var request = await context.Request.ReadFromJsonAsync<MeasurementRequest>();
-            var results = GetMeasurements(request);
-            await context.Response.WriteAsJsonAsync(results);
+            var results = GetMeasurements(request).ToList();
+            try
+            {
+                await context.Response.WriteAsJsonAsync(results);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+                throw;
+            }
             return true;
         }
 
@@ -100,17 +108,19 @@ public class MeterMiddleware : IMiddleware
                 InstrumentName = instrument.Name, 
                 InstrumentType = GetNameWithoutGenericPostfix(instrument.GetType()),
                 InstrumentUnit = instrument.Unit,
-                Metrics = measurements
-                    .Select(m =>
+                Groups = measurements
+                    .SelectMany(m =>
                     {
-                        var dataPoints = m.GetDataPoints(null)
-                            .Where(x => x.Timestamp <= DateTime.UtcNow.AddSeconds(-1));
-                        return new MeasurementResponse.Metric
-                        {
-                            Tags = m.Tags.ToDictionary(x => x.Key, x => x.Value),
-                            Xs = dataPoints.Select(x => x.Timestamp).ToImmutableList(),
-                            Ys = dataPoints.Select(x => x.Value).ToImmutableList(),
-                        };
+                        var dataPoints = m.GetDataPoints(null);
+                        var byWindow = dataPoints.ToLookup(x => x.Window);
+                        return byWindow
+                            .Select(g => new MeasurementResponse.Group
+                            {
+                                Tags = m.Tags.ToDictionary(x => x.Key, x => x.Value),
+                                Window = g.Key.ToString(),
+                                Xs = g.Select(x => x.Timestamp).ToImmutableList(),
+                                Ys = g.Select(x => x.Value).ToImmutableList(),
+                            });
                     })
                     .ToImmutableList()
             };

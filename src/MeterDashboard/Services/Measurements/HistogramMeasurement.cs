@@ -2,7 +2,7 @@
 
 namespace MeterDashboard.Services.Measurements;
 
-public struct Stat<T> where T: struct
+public record struct Stat<T> where T: struct
 {
     public T Min { get; init; }
     public T Max { get; init; }
@@ -75,17 +75,17 @@ public class HistogramMeasurement<T, C> : IMeasurement, IMeasurementFactory
     private TimeLine<DoubleStat> _timeLine;
     private C _converter = new();
 
-    public HistogramMeasurement(TimeSpan interval, int capacity, ReadOnlySpan<KeyValuePair<string, object?>> tags, Instrument instrument)
+    public HistogramMeasurement(ReadOnlySpan<KeyValuePair<string, object?>> tags, Instrument instrument)
     {
         Instrument = instrument;
         Tags = tags.ToArray();
-        _timeLine = new TimeLine<DoubleStat>(interval, capacity, false);
+        _timeLine = new TimeLine<DoubleStat>(false);
     }
 
-    public static IMeasurement Create(TimeSpan interval, int capacity, ReadOnlySpan<KeyValuePair<string, object?>> tags,
+    public static IMeasurement Create(ReadOnlySpan<KeyValuePair<string, object?>> tags,
         Instrument instrument)
     {
-        return new HistogramMeasurement<T, C>(interval, capacity, tags, instrument);
+        return new HistogramMeasurement<T, C>(tags, instrument);
     }
 
     public Instrument Instrument { get; }
@@ -100,6 +100,7 @@ public class HistogramMeasurement<T, C> : IMeasurement, IMeasurementFactory
             .Select(item => new DataPoint
             {
                 Timestamp = item.Timestamp,
+                Window = item.Window,
                 Value = new Stat<T>()
                 {
                     Min = _converter.FromDouble(item.Value.Min),
@@ -118,11 +119,13 @@ public class HistogramMeasurement<T, C> : IMeasurement, IMeasurementFactory
 
     public void Add(T tvalue)
     {
-        var value = _converter.ToDouble(tvalue);
-        lock (_timeLine)
-        {
-            _timeLine.GetOrAdd(DateTime.UtcNow).Value.Add(value);
-        }
+        var stats = new DoubleStat();
+        stats.Add(_converter.ToDouble(tvalue));
+        
+        _timeLine.AddOrUpdate(
+            DateTime.UtcNow, 
+            stats,
+            (ref DoubleStat exitingValue, in DoubleStat newValue) => exitingValue.Add(newValue));
     }
 
     private struct DoubleStat
@@ -142,6 +145,17 @@ public class HistogramMeasurement<T, C> : IMeasurement, IMeasurementFactory
                 Min = value;
             if (value > Max || N == 0)
                 Max = value;
+        }
+        
+        public void Add(DoubleStat other)
+        {
+            N += other.N;
+            Sum += other.Sum;
+            SqrSum += other.SqrSum;
+            if (other.Min < Min || N == 0)
+                Min = other.Min;
+            if (other.Max > Max || N == 0)
+                Max = other.Max;
         }
         
         public readonly double GetStddev() => N > 0 ? Math.Sqrt(SqrSum / N - Math.Pow(GetMean(), 2)) : 0;

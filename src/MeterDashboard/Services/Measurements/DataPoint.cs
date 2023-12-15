@@ -3,18 +3,14 @@
 public struct DataPoint
 {
     public DateTime Timestamp;
+    public Window Window;
     public object Value;
 }
 
-public struct DataPoint<T>
+public record struct DataPoint<T>(DateTime Timestamp, T Value, Window Window);
+
+public enum Window
 {
-    public DateTime Timestamp;
-    public T Value;
-
-    public DataPoint(DateTime timestamp)
-    {
-        Timestamp = timestamp;
-    }
-
-    public override string ToString() => $"({Timestamp}, {Value})";
+    Second,
+    Minute
 }

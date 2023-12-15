@@ -41,7 +41,7 @@ class Generator : BackgroundService
         while (!stoppingToken.IsCancellationRequested)
         {
             using var activity = _activitySource.StartActivity();
-            await Task.Delay(100, stoppingToken);
+            await Task.Delay(TimeSpan.FromMilliseconds(_random.NextDouble()*5000), stoppingToken);
             _duration.Record(_random.NextDouble(), new KeyValuePair<string, object?>("User", "A"));
             _duration.Record(Math.Pow(_random.NextDouble(), 2)*2, new KeyValuePair<string, object?>("User", "B"));
             _expenses.Add(_random.NextDouble()*10-5);

@@ -1,4 +1,5 @@
-if (!window.apiPort) {
+if (!window.apiPort)
+{
     window.apiPort = 5177;
 }
 
@@ -15,23 +16,35 @@ const colors = [
     '#17becf'   // blue-teal
 ];
 
+class UnitList
+{
+    constructor(){
+        // this.onSelectChange = undefined;
+        this.selectedUnit = "Second";
+        $("body").on("change", 'input[type=radio][name=unit]', (e) => {
+            this.selectedUnit = e.target.value;
+        });
+    }
+}
+
 class MeteList
 {
-    constructor(ulElement)
+    constructor()
     {
-        this.ulElement = ulElement;
+        this.ulElement = $("#meters-list");
         this.items = new Set();
         this.selectedMeters = [];
         this.onSelectChange = undefined;
         $("body").on("change", $(".meter-item input[type='checkbox']"), () =>
         {
             this.selectedMeters = $(".meter-item input[type='checkbox']:checked")
-                .map((i,e) => $(e).data("meter-name"))
+                .map((i, e) => $(e).data("meter-name"))
                 .toArray();
             this.onSelectChange();
         });
-        $("body").on("click", "#clear-meter-filter", () => {
-            $(".meter-item input[type='checkbox']").prop( "checked", false );
+        $("body").on("click", "#clear-meter-filter", () =>
+        {
+            $(".meter-item input[type='checkbox']").prop("checked", false);
             this.selectedMeters = [];
             this.onSelectChange();
         });
@@ -44,7 +57,7 @@ class MeteList
 
         this.items.add(meter);
         this.ulElement.append(`
-            <label class="meter-item">
+            <label class="side-area-list-item meter-item">
                 <input type="checkbox" data-meter-name="${meter}">
                 ${meter}
             </label>`)
@@ -56,8 +69,12 @@ $(document).ready(function ()
 {
     const baseUrl = `http://localhost:${window.apiPort}/meter-dashboard/api`;
     const loadingPlotsPanel = $(".loading-plots");
-    const meterList = new MeteList($(".meters-list"));
+
+    const meterList = new MeteList();
     meterList.onSelectChange = onSelectedMetersChange;
+
+    const unitList = new UnitList();
+
     let states = []
 
     let loadingAnimation = setInterval(function ()
@@ -70,7 +87,8 @@ $(document).ready(function ()
 
     setInterval(refreshLoop, 1000);
 
-    function onSelectedMetersChange() {
+    function onSelectedMetersChange()
+    {
         $(".measurements-grid").empty();
         states = [];
     }
@@ -120,7 +138,7 @@ $(document).ready(function ()
             states.push(state);
             meterList.add(measurement.meterName);
         }
-        if(measurement.instrumentType == "ActivityInstrument")
+        if (measurement.instrumentType == "ActivityInstrument")
             createOrUpdatePlotForActivity(measurement, state);
         else if (measurement.instrumentType == "Histogram")
             createOrUpdatePlotForHistogram(measurement, state);
@@ -129,41 +147,48 @@ $(document).ready(function ()
 
     }
 
-    function createOrUpdatePlotForHistogram(measurement, state){
-        xs = measurement.metrics[0].xs.map(x => new Date(x + 'Z'));
+    function createOrUpdatePlotForHistogram(measurement, state)
+    {
+
         let data = []
-        $.each(measurement.metrics, (i, metric) =>
-        {
-            data.push({
-                x: xs,
-                y: measurement.metrics[i].ys.map(y => y.mean-3*y.stddev),
-                type: 'scatter',
-                fill: 'tozeroy',
-                fillcolor: '#00000000',
-                mode: 'none',
-                showlegend: false
+        measurement.groups
+            .filter(function (group)
+            {
+                return group.window == unitList.selectedUnit;
+            })
+            .forEach((group, i) =>
+            {
+                xs = group.xs.map(x => new Date(x + 'Z'));
+                data.push({
+                    x: xs,
+                    y: group.ys.map(y => y.mean - 3 * y.stddev),
+                    type: 'scatter',
+                    fill: 'tozeroy',
+                    fillcolor: '#00000000',
+                    mode: 'none',
+                    showlegend: false
+                });
+                data.push({
+                    x: xs,
+                    y: group.ys.map(y => y.mean + 3 * y.stddev),
+                    fill: 'tonexty',
+                    fillcolor: colors[i] + "30",
+                    type: 'scatter',
+                    mode: 'none',
+                    showlegend: false
+                });
+                data.push({
+                    x: xs,
+                    y: group.ys.map(y => y.mean),
+                    type: 'scatter',
+                    line: {
+                        color: colors[i],
+                    },
+                    name: Object.keys(group.tags).map(k => k + ": " + group.tags[k]).join("-")
+                });
             });
-            data.push({
-                x: xs,
-                y: measurement.metrics[i].ys.map(y => y.mean+3*y.stddev),
-                fill: 'tonexty',
-                fillcolor: colors[i]+"30",
-                type: 'scatter',
-                mode: 'none',
-                showlegend: false
-            });
-            data.push({
-                x: xs,
-                y: measurement.metrics[i].ys.map(y => y.mean),
-                type: 'scatter',
-                line: {
-                  color: colors[i],
-                },
-                name: Object.keys(metric.tags).map(k => k + ": " + metric.tags[k]).join("-")
-            });
-        });
         let layout = {
-            xaxis: getXaxis(),
+            xaxis: { fixedrange: true, type: 'date' },
             yaxis: { fixedrange: true },
             margin: { l: 30, r: 0, b: 20, t: 0 },
             height: 200,
@@ -173,7 +198,8 @@ $(document).ready(function ()
             // plot_bgcolor:"transparent",
             // paper_bgcolor:"transparent"
         };
-        if(measurement.metrics.length == 1){
+        if (measurement.groups.length == 1)
+        {
             layout.showlegend = false;
         }
         const config = {
@@ -184,18 +210,20 @@ $(document).ready(function ()
         Plotly.react(state.elementName, data, layout, config);
     }
 
-    function createOrUpdatePlotForActivity(measurement, state){
-        const xs = measurement.metrics[0].xs.map(x => new Date(x + 'Z'));
+    function createOrUpdatePlotForActivity(measurement, state)
+    {
+        const group = measurement.groups.find(g => g.window == unitList.selectedUnit);
+        const xs = group.xs.map(x => new Date(x + 'Z'));
         const data = [
             {
                 x: xs,
-                y: measurement.metrics[0].ys.map(y => y.occurrances),
+                y: group.ys.map(y => y.occurrances),
                 type: 'scatter',
                 name: "Occurrances"
             },
             {
                 x: xs,
-                y: measurement.metrics[0].ys.map(y => Math.max(0, y.meanDuration-3*y.stddevDuration)),
+                y: group.ys.map(y => Math.max(0, y.meanDuration - 3 * y.stddevDuration)),
                 type: 'scatter',
                 fill: 'tozeroy',
                 fillcolor: '#00000000',
@@ -205,9 +233,9 @@ $(document).ready(function ()
             },
             {
                 x: xs,
-                y: measurement.metrics[0].ys.map(y => y.meanDuration+3*y.stddevDuration),
+                y: group.ys.map(y => y.meanDuration + 3 * y.stddevDuration),
                 fill: 'tonexty',
-                fillcolor: colors[1]+"30",
+                fillcolor: colors[1] + "30",
                 type: 'scatter',
                 mode: 'none',
                 showlegend: false,
@@ -215,28 +243,31 @@ $(document).ready(function ()
             },
             {
                 x: xs,
-                y: measurement.metrics[0].ys.map(y => y.meanDuration),
+                y: group.ys.map(y => y.meanDuration),
                 type: 'scatter',
                 line: {
-                  color: colors[1],
+                    color: colors[1],
                 },
                 name: "Duration (Mean\u00B13\u03C3)",
                 yaxis: 'y2',
             }
         ]
         const layout = {
-            xaxis: getXaxis(),
-            yaxis: { 
-                fixedrange: true ,
-                tickfont : {
-                    color : colors[0]
+            xaxis: {
+                fixedrange: true, 
+                type: 'date'
+            },
+            yaxis: {
+                fixedrange: true,
+                tickfont: {
+                    color: colors[0]
                 }
             },
             yaxis2: {
                 overlaying: 'y',
                 side: 'right',
-                tickfont : {
-                    color : colors[1]
+                tickfont: {
+                    color: colors[1]
                 }
             },
             margin: { l: 30, r: 90, b: 20, t: 0 },
@@ -244,7 +275,7 @@ $(document).ready(function ()
             legend: {
                 orientation: "h"
             },
-           
+
             // plot_bgcolor:"transparent",
             // paper_bgcolor:"transparent"
         };
@@ -260,22 +291,27 @@ $(document).ready(function ()
     {
         let allTagKeys = new Set();
         let data = [];
-        $.each(measurement.metrics, (i, metric) =>
-        {
-            let xs = metric.xs.map(x => new Date(x + 'Z'));
-            let ys = metric.ys;
-            let tagKeys = Object.keys(metric.tags);
-            //state.lastDate = xs[xs.length - 1];
-            data.push({
-                x: xs,
-                y: ys,
-                type: 'scatter',
-                name: Object.keys(metric.tags).map(k => k + ": " + metric.tags[k]).join("-")
+        measurement.groups
+            .filter(function (group)
+            {
+                return group.window == unitList.selectedUnit;
+            })
+            .forEach((group) =>
+            {
+                let xs = group.xs.map(x => new Date(x + 'Z'));
+                let ys = group.ys;
+                let tagKeys = Object.keys(group.tags);
+                //state.lastDate = xs[xs.length - 1];
+                data.push({
+                    x: xs,
+                    y: ys,
+                    type: 'scatter',
+                    name: Object.keys(group.tags).map(k => k + ": " + group.tags[k]).join("-")
+                });
+                $.each(tagKeys, (i, t) => allTagKeys.add(t));
             });
-            $.each(tagKeys, (i, t) => allTagKeys.add(t));
-        });
         let layout = {
-            xaxis: getXaxis(),
+            xaxis: { fixedrange: true, type: 'date'},
             yaxis: { fixedrange: true },
             margin: { l: 30, r: 0, b: 20, t: 0 },
             height: 200,
@@ -292,23 +328,4 @@ $(document).ready(function ()
         };
         Plotly.react(state.elementName, data, layout, config);
     }
-
-    function getXaxis()
-    {
-        let now = new Date();
-        now.setMilliseconds(0);
-        let oneMinuteAgo = new Date();
-        oneMinuteAgo.setMilliseconds(0);
-        oneMinuteAgo.setMinutes(now.getMinutes() - 1);
-        return {
-            type: 'date',
-            range: [oneMinuteAgo, now],
-            fixedrange: true
-        }
-    }
 });
-
-
-// instrumentName
-// instrumentUnit
-// meterName
