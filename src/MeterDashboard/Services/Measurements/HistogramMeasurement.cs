@@ -68,24 +68,25 @@ public static class DoubleConverters
 }
 
 
-public class HistogramMeasurement<T, C> : IMeasurement, IMeasurementFactory
+class HistogramMeasurement<T, C> : IMeasurement, IMeasurementFactory
     where T: struct 
     where C: IDoubleConverter<T>, new()
 {
     private TimeLine<DoubleStat> _timeLine;
     private C _converter = new();
 
-    public HistogramMeasurement(ReadOnlySpan<KeyValuePair<string, object?>> tags, Instrument instrument)
+    public HistogramMeasurement(ReadOnlySpan<KeyValuePair<string, object?>> tags, Instrument instrument,
+        ITimeLineFactory timeLineFactory)
     {
         Instrument = instrument;
         Tags = tags.ToArray();
-        _timeLine = new TimeLine<DoubleStat>(false);
+        _timeLine = timeLineFactory.Create<DoubleStat>(false);
     }
 
     public static IMeasurement Create(ReadOnlySpan<KeyValuePair<string, object?>> tags,
-        Instrument instrument)
+        Instrument instrument, ITimeLineFactory timeLineFactory)
     {
-        return new HistogramMeasurement<T, C>(tags, instrument);
+        return new HistogramMeasurement<T, C>(tags, instrument, timeLineFactory);
     }
 
     public Instrument Instrument { get; }

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MeterDashboard.Web;
 
-public class MeterMiddleware : IMiddleware
+class MeterMiddleware : IMiddleware
 {
     private const string PathBase = "/meter-dashboard";
     private const string StaticFileNamespace = "MeterDashboard.Web.StaticFiles";

@@ -3,7 +3,7 @@ using System.Diagnostics.Metrics;
 
 namespace MeterDashboard.Services;
 
-public class MeterService : IDisposable
+class MeterService : IDisposable
 {
     private readonly MeterListener _meterListener;
     private readonly ActivityListener _activityListener;
@@ -43,7 +43,6 @@ public class MeterService : IDisposable
 
     private void InstrumentPublished(Instrument instrument, MeterListener listener)
     {
-        Console.WriteLine($"Subscribing to {instrument.Meter.Name}\\{instrument.Name}");
         _meterListener.EnableMeasurementEvents(instrument);
     }
 

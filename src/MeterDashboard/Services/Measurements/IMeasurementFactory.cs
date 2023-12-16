@@ -2,8 +2,8 @@
 
 namespace MeterDashboard.Services.Measurements;
 
-public interface IMeasurementFactory
+interface IMeasurementFactory
 {
-    static abstract IMeasurement Create(ReadOnlySpan<KeyValuePair<string, object?>> tags, Instrument instrument);
+    static abstract IMeasurement Create(ReadOnlySpan<KeyValuePair<string, object?>> tags, Instrument instrument, ITimeLineFactory timeLineFactory);
 
 }

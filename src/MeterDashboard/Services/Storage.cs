@@ -5,10 +5,16 @@ using MeterDashboard.Services.Measurements;
 
 namespace MeterDashboard.Services;
 
-public class Storage
+class Storage
 {
+    private readonly ITimeLineFactory _timeLineFactory;
     private readonly Dictionary<long, IMeasurement> _measurements = new();
 
+    public Storage(ITimeLineFactory timeLineFactory)
+    {
+        _timeLineFactory = timeLineFactory;
+    }
+    
     public IReadOnlyCollection<IMeasurement> Measurements => _measurements.Values;
 
     public void Insert<T>(Instrument instrument, T value, ReadOnlySpan<KeyValuePair<string, object?>> tags) 
@@ -122,7 +128,7 @@ public class Storage
             {
                 if (!_measurements.TryGetValue(key, out measurement))
                 {
-                    measurement = new ActivityMeasurement(sourceName, activityName);
+                    measurement = new ActivityMeasurement(sourceName, activityName, _timeLineFactory);
                     _measurements[key] = measurement;
                 }
             }
@@ -149,7 +155,7 @@ public class Storage
             {
                 if (!_measurements.TryGetValue(key, out measurement))
                 {
-                    measurement = TMeasurement.Create(tags, instrument);
+                    measurement = TMeasurement.Create(tags, instrument, _timeLineFactory);
                     _measurements[key] = measurement;
                 }
             }

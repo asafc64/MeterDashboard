@@ -9,28 +9,32 @@ using Microsoft.Extensions.Options;
 
 namespace MeterDashboard.Services;
 
-public class InitializerHostedService : IHostedService
+class InitializerHostedService : IHostedService
 {
     private readonly MeterService _meterService;
     private readonly IServer _server;
     private readonly IConfiguration _configuration;
-    private readonly ILoggerFactory _loggerFactory;
+    private readonly ILogger _logger;
+    private readonly IOptions<MeterDashboardOptions> _options;
 
     public InitializerHostedService(
         MeterService meterService, 
         IServer server,
         IConfiguration configuration,
-        ILoggerFactory loggerFactory)
+        ILoggerFactory loggerFactory,
+        IOptions<MeterDashboardOptions> options)
     {
         _meterService = meterService;
         _server = server;
         _configuration = configuration;
-        _loggerFactory = loggerFactory;
+        _logger = loggerFactory.CreateLogger("MeterDashboard");
+        _options = options;
     }
     
     public Task StartAsync(CancellationToken cancellationToken)
     {
         _meterService.Start();
+        _logger.LogInformation("Configured with {options}", _options.Value);
         LogDashboardAddress();
         return Task.CompletedTask;
     }
@@ -48,9 +52,7 @@ public class InitializerHostedService : IHostedService
         var address = addresses?.FirstOrDefault();
         if (address?.Any() == true)
         {
-            _loggerFactory
-                .CreateLogger("MeterDashboard")
-                .LogInformation($"MeterDashboard can be found in {address}/meter-dashboard");
+            _logger.LogInformation("Hosted on: {address}/meter-dashboard", address);
         }
     }
     

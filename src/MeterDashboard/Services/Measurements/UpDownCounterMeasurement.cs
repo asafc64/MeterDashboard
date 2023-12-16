@@ -3,20 +3,22 @@ using System.Numerics;
 
 namespace MeterDashboard.Services.Measurements;
 
-public class UpDownCounterMeasurement<T> : IMeasurement, IMeasurementFactory where T: struct, IAdditionOperators<T,T,T>
+class UpDownCounterMeasurement<T> : IMeasurement, IMeasurementFactory where T: struct, IAdditionOperators<T,T,T>
 {
     private TimeLine<T> _timeLine;
 
-    public UpDownCounterMeasurement(ReadOnlySpan<KeyValuePair<string, object?>> tags, Instrument instrument)
+    public UpDownCounterMeasurement(ReadOnlySpan<KeyValuePair<string, object?>> tags, Instrument instrument,
+        ITimeLineFactory timeLineFactory)
     {
         Instrument = instrument;
         Tags = tags.ToArray();
-        _timeLine = new TimeLine<T>(true);
+        _timeLine = timeLineFactory.Create<T>(true);
     }
     
-    public static IMeasurement Create(ReadOnlySpan<KeyValuePair<string, object?>> tags, Instrument instrument)
+    public static IMeasurement Create(ReadOnlySpan<KeyValuePair<string, object?>> tags, Instrument instrument,
+        ITimeLineFactory timeLineFactory)
     {
-        return new UpDownCounterMeasurement<T>(tags, instrument);
+        return new UpDownCounterMeasurement<T>(tags, instrument, timeLineFactory);
     }
 
     public Instrument Instrument { get; }

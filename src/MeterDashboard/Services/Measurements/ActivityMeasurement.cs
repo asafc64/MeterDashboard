@@ -10,13 +10,13 @@ public record struct ActivityDataPointValue
     public double StddevDuration { get; init; }
 } 
 
-public class ActivityMeasurement : IMeasurement
+class ActivityMeasurement : IMeasurement
 {
     private TimeLine<Stats> _timeLine;
 
-    public ActivityMeasurement(string sourceName, string activityName)
+    public ActivityMeasurement(string sourceName, string activityName, ITimeLineFactory timeLineFactory)
     {
-        _timeLine = new TimeLine<Stats>(false);
+        _timeLine = timeLineFactory.Create<Stats>(false);
         Instrument = new ActivityInstrument(sourceName, activityName);
     }
 

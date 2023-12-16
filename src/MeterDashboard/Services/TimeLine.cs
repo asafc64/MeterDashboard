@@ -1,10 +1,30 @@
-using System.Runtime.InteropServices;
 using MeterDashboard.Services.Measurements;
 using MeterDashboard.Utils;
+using Microsoft.Extensions.Options;
 
 namespace MeterDashboard.Services;
 
-public class TimeLine<T> where T: struct
+interface ITimeLineFactory
+{
+    TimeLine<T> Create<T>(bool aggValue) where T : struct;
+}
+
+class TimeLineFactory : ITimeLineFactory
+{
+    private readonly IOptions<MeterDashboardOptions> _options;
+
+    public TimeLineFactory(IOptions<MeterDashboardOptions> options)
+    {
+        _options = options;
+    }
+    
+    public TimeLine<T> Create<T>(bool aggValue) where T : struct
+    {
+        return new TimeLine<T>(aggValue, _options.Value.Seconds, _options.Value.Minutes);
+    }
+}
+
+class TimeLine<T> where T: struct
 {
     private readonly bool _aggValue;
     private readonly CircularQueue<T> _queueOfSeconds;
@@ -12,13 +32,13 @@ public class TimeLine<T> where T: struct
 
     public delegate void Updater(ref T exitingValue, in T newValue);
 
-    public TimeLine(bool aggValue)
+    public TimeLine(bool aggValue, int seconds, int minutes)
     {
         _aggValue = aggValue;
-        _queueOfSeconds = new CircularQueue<T>(TimeSpan.FromSeconds(1), 60, aggValue);
-        _queueOfMinutes = new CircularQueue<T>(TimeSpan.FromMinutes(1), 60, aggValue);
+        _queueOfSeconds = new CircularQueue<T>(TimeSpan.FromSeconds(1), seconds, aggValue);
+        _queueOfMinutes = new CircularQueue<T>(TimeSpan.FromMinutes(1), minutes, aggValue);
     }
-    
+
     public void AddOrUpdate(DateTime timestamp, T value, Updater update)
     {
         ref var item = ref _queueOfSeconds.GetOrAdd(timestamp);
@@ -30,58 +50,37 @@ public class TimeLine<T> where T: struct
 
     public IReadOnlyCollection<DataPoint<T>> SnapShot()
     {
-        var itemsOfSeconds = _queueOfSeconds.SnapShot();
-        var itemsOfMinutes = _queueOfMinutes.SnapShot();
-        var nowSeconds = _queueOfSeconds.RoundTimestamp(DateTime.UtcNow);
-        var nowMinutes = _queueOfMinutes.RoundTimestamp(DateTime.UtcNow);
-        var results = new List<DataPoint<T>>(itemsOfSeconds.Length+itemsOfMinutes.Length);
-
-        var itemIdx = 0;
-        var start = nowSeconds - 60.Seconds();
-        var lastValue = itemsOfSeconds.LastOrDefault(i => i.Timestamp < start).Value;
-        for (var time = start; time < nowSeconds; time += 1.Seconds())
-        {
-            while (itemIdx < itemsOfSeconds.Length && 
-                   itemsOfSeconds[itemIdx].Timestamp < time) itemIdx++;
-
-            lastValue = itemIdx < itemsOfSeconds.Length && itemsOfSeconds[itemIdx].Timestamp == time
-                ? itemsOfSeconds[itemIdx].Value 
-                : (_aggValue ? lastValue : default);
-            
-            results.Add(new DataPoint<T>(time, lastValue, Window.Second));
-        }
-        
-        itemIdx = 0;
-        lastValue = itemsOfMinutes.LastOrDefault(i => i.Timestamp < start).Value;;
-        for (var time = nowMinutes-60.Minutes(); time < nowMinutes; time += 1.Minutes())
-        {
-            while (itemIdx < itemsOfMinutes.Length && 
-                   itemsOfMinutes[itemIdx].Timestamp < time) itemIdx++;
-
-            lastValue = itemIdx < itemsOfMinutes.Length && itemsOfMinutes[itemIdx].Timestamp == time 
-                ? itemsOfMinutes[itemIdx].Value 
-                : (_aggValue ? lastValue : default);
-            
-            results.Add(new DataPoint<T>(time, lastValue, Window.Minute));
-        }
-        
-        // foreach (var item in itemsOfSeconds)
-        // {
-        //     if(item.Timestamp == nowSeconds)
-        //         continue;
-        //     
-        //     results.Add(new DataPoint<T>(item.Timestamp, item.Value, Window.Second));
-        // }
-        //
-        // foreach (var item in itemsOfMinutes)
-        // {
-        //     if(item.Timestamp == nowMinutes)
-        //         continue;
-        //
-        //     results.Add(new DataPoint<T>(item.Timestamp, item.Value, Window.Minute));
-        // }
-
+        var results = new List<DataPoint<T>>(_queueOfSeconds.Capacity+_queueOfMinutes.Capacity);
+        AddQueueSnapshot(results, _queueOfSeconds, Window.Second, _aggValue);
+        AddQueueSnapshot(results, _queueOfMinutes, Window.Minute, _aggValue);
         return results;
+    }
+
+    private static void AddQueueSnapshot(List<DataPoint<T>> results, CircularQueue<T> queue, Window window, bool aggValue)
+    {
+        var items = queue.SnapShot();
+        var itemIdx = 0;
+        var roundedNow = queue.RoundTimestamp(DateTime.UtcNow);
+        var start = roundedNow - queue.Capacity*queue.Step;
+        var lastValue = default(T);
+
+        if(aggValue)
+            for (; itemIdx < items.Length && items[itemIdx].Timestamp < start; itemIdx++)
+            {
+                lastValue = items[itemIdx].Value;
+            }
+        
+        for (var time = start; time < roundedNow; time += 1.Seconds())
+        {
+            while (itemIdx < items.Length && 
+                   items[itemIdx].Timestamp < time) itemIdx++;
+
+            lastValue = itemIdx < items.Length && items[itemIdx].Timestamp == time
+                ? items[itemIdx].Value 
+                : (aggValue ? lastValue : default);
+            
+            results.Add(new DataPoint<T>(time, lastValue, window));
+        }
     }
 }
 
@@ -100,6 +99,9 @@ public class CircularQueue<T>
         _queue = new Item<T>[capacity];
     }
 
+    public int Capacity => _queue.Length;
+    public TimeSpan Step => _interval;
+    
     public ref Item<T> GetOrAdd(DateTime timestamp)
     {
         var roundedTimestamp = RoundTimestamp(timestamp); 

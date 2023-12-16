@@ -3,20 +3,21 @@ using System.Numerics;
 
 namespace MeterDashboard.Services.Measurements;
 
-public class CounterMeasurement<T> : IMeasurement, IMeasurementFactory where T: struct, IAdditionOperators<T,T,T>
+class CounterMeasurement<T> : IMeasurement, IMeasurementFactory where T: struct, IAdditionOperators<T,T,T>
 {
     private TimeLine<T> _timeLine;
 
-    public CounterMeasurement(ReadOnlySpan<KeyValuePair<string, object?>> tags, Instrument instrument)
+    public CounterMeasurement(ReadOnlySpan<KeyValuePair<string, object?>> tags, Instrument instrument,
+        ITimeLineFactory timeLineFactory)
     {
         Instrument = instrument;
         Tags = tags.ToArray();
-        _timeLine = new TimeLine<T>(false);
+        _timeLine = timeLineFactory.Create<T>(false);
     }
     
-    public static IMeasurement Create(ReadOnlySpan<KeyValuePair<string, object?>> tags, Instrument instrument)
+    public static IMeasurement Create(ReadOnlySpan<KeyValuePair<string, object?>> tags, Instrument instrument, ITimeLineFactory timeLineFactory)
     {
-        return new CounterMeasurement<T>(tags, instrument);
+        return new CounterMeasurement<T>(tags, instrument, timeLineFactory);
     }
 
     public Instrument Instrument { get; }
