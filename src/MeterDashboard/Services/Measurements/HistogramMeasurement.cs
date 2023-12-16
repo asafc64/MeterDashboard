@@ -142,9 +142,9 @@ class HistogramMeasurement<T, C> : IMeasurement, IMeasurementFactory
             N++;
             Sum += value;
             SqrSum += value*value;
-            if (value < Min || N == 0)
+            if (value < Min || N == 1)
                 Min = value;
-            if (value > Max || N == 0)
+            if (value > Max || N == 1)
                 Max = value;
         }
         

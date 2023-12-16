@@ -70,7 +70,7 @@ class TimeLine<T> where T: struct
                 lastValue = items[itemIdx].Value;
             }
         
-        for (var time = start; time < roundedNow; time += 1.Seconds())
+        for (var time = start; time < roundedNow; time += queue.Step)
         {
             while (itemIdx < items.Length && 
                    items[itemIdx].Timestamp < time) itemIdx++;
